@@ -1,679 +1,848 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣夜市懷舊小瑪莉彈珠台</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Matter.js 0.19.0 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <style>
-        /* 七彩霓虹邊框 CSS 動畫 */
-        @keyframes rainbow-border {
-            0% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
-            20% { border-color: #ff7f00; box-shadow: 0 0 15px #ff7f00; }
-            40% { border-color: #ffff00; box-shadow: 0 0 15px #ffff00; }
-            60% { border-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
-            80% { border-color: #0000ff; box-shadow: 0 0 15px #0000ff; }
-            100% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
-        }
-        .neon-frame {
-            border: 8px solid #ff0000;
-            animation: rainbow-border 4s infinite;
-        }
-        /* 燈號發光特效 */
-        .lamp-active {
-            background-color: #facc15 !important;
-            box-shadow: 0 0 20px #facc15, 0 0 40px #eab308 !important;
-            color: #713f12 !important;
-            border-color: #fef08a !important;
-        }
-        .lamp-running {
-            background-color: #ef4444 !important;
-            color: #ffffff !important;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>台灣夜市懷舊小瑪莉彈珠台</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Matter.js 0.19.0 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <style>
+    @keyframes neonGlow {
+      0%, 100% { box-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055, 0 0 30px #ff0055, inset 0 0 10px #ff0055; }
+      50% { box-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff, 0 0 40px #00ffff, inset 0 0 20px #00ffff; }
+    }
+    @keyframes rainbowBorder {
+      0% { border-color: #ff0000; }
+      20% { border-color: #ff7700; }
+      40% { border-color: #ffff00; }
+      60% { border-color: #00ff00; }
+      80% { border-color: #00ffff; }
+      100% { border-color: #ff00ff; }
+    }
+    .neon-frame {
+      animation: rainbowBorder 3s infinite linear;
+      border-width: 6px;
+      border-style: solid;
+    }
+    .neon-pulse {
+      animation: neonGlow 1.5s infinite alternate;
+    }
+    /* 禁止手機預設捲動與縮放行為 */
+    body {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-2 select-none">
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen overflow-hidden font-sans">
 
-    <!-- 遊戲機台外框容器 -->
-    <div class="w-full max-w-sm bg-red-700 rounded-2xl neon-frame p-3 flex flex-col gap-2 shadow-2xl relative overflow-hidden">
+  <!-- 遊戲主機外框 -->
+  <div id="game-container" class="relative w-full max-w-[440px] h-[100dvh] max-h-[900px] bg-red-600 neon-frame flex flex-col shadow-2xl overflow-hidden rounded-xl">
+    
+    <!-- 頂部燈箱 (Header / Marquee) -->
+    <div class="bg-amber-400 text-red-900 px-3 py-2 flex items-center justify-between border-b-4 border-red-800 shrink-0 select-none">
+      <!-- 左側投幣口 -->
+      <div class="flex items-center gap-1 bg-red-900 text-amber-300 px-2 py-1 rounded text-xs font-bold border border-amber-300">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+        <span>投幣口</span>
+      </div>
 
-        <!-- 頂部燈箱 -->
-        <div class="bg-yellow-300 border-4 border-red-900 rounded-lg p-2 flex flex-col gap-2 relative shadow-inner">
-            <!-- 左側金屬投幣口 -->
-            <div class="absolute left-2 top-2 w-9 h-11 bg-gray-300 border-2 border-gray-500 rounded flex flex-col items-center justify-center shadow">
-                <div class="w-5 h-1 bg-gray-700 rounded mb-1"></div>
-                <div class="text-[8px] text-black font-bold">COIN</div>
-            </div>
-            <!-- 右側黃色喇叭網罩 -->
-            <div class="absolute right-2 top-2 w-8 h-8 bg-yellow-500 border-2 border-yellow-700 rounded-full flex items-center justify-center shadow">
-                <div class="w-4 h-4 bg-yellow-700 rounded-full opacity-60 grid grid-cols-2 gap-0.5 p-0.5">
-                    <div class="bg-yellow-900 rounded-full"></div>
-                    <div class="bg-yellow-900 rounded-full"></div>
-                    <div class="bg-yellow-900 rounded-full"></div>
-                    <div class="bg-yellow-900 rounded-full"></div>
-                </div>
-            </div>
-
-            <!-- 卡通機器人標題 (Inline SVG) -->
-            <div class="flex items-center justify-center gap-2 mt-1">
-                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="6" width="16" height="14" rx="2" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2"/>
-                    <circle cx="9" cy="11" r="2" fill="#facc15"/>
-                    <circle cx="15" cy="11" r="2" fill="#facc15"/>
-                    <rect x="8" y="15" width="8" height="2" rx="1" fill="#ef4444"/>
-                    <rect x="11" y="2" width="2" height="4" fill="#64748b"/>
-                    <circle cx="12" cy="2" r="1.5" fill="#ef4444"/>
-                </svg>
-                <div class="text-center">
-                    <h1 class="text-red-700 font-black text-lg tracking-wider drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">台灣夜市小瑪莉</h1>
-                    <p class="text-[10px] text-red-900 font-bold">懷舊彈珠台</p>
-                </div>
-                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="6" width="16" height="14" rx="2" fill="#10b981" stroke="#065f46" stroke-width="2"/>
-                    <circle cx="9" cy="11" r="2" fill="#facc15"/>
-                    <circle cx="15" cy="11" r="2" fill="#facc15"/>
-                    <path d="M8 15H16" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-                    <rect x="11" y="2" width="2" height="4" fill="#64748b"/>
-                </svg>
-            </div>
-
-            <!-- 5個倍率燈 (2x, 4x, 6x, 8x, 10x) -->
-            <div class="flex justify-around items-center bg-red-950 p-1.5 rounded-lg border-2 border-yellow-500">
-                <div id="lamp-2" class="w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200">2X</div>
-                <div id="lamp-4" class="w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200">4X</div>
-                <div id="lamp-6" class="w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200">6X</div>
-                <div id="lamp-8" class="w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200">8X</div>
-                <div id="lamp-10" class="w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200">10X</div>
-            </div>
+      <!-- 中央機器人與標題 -->
+      <div class="flex items-center gap-2">
+        <svg class="w-8 h-8" viewBox="0 0 64 64">
+          <rect x="16" y="20" width="32" height="28" rx="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
+          <circle cx="26" cy="30" r="4" fill="#38bdf8"/>
+          <circle cx="38" cy="30" r="4" fill="#38bdf8"/>
+          <rect x="24" y="38" width="16" height="4" rx="2" fill="#facc15"/>
+          <line x1="32" y1="20" x2="32" y2="10" stroke="#7f1d1d" stroke-width="3"/>
+          <circle cx="32" cy="8" r="3" fill="#facc15"/>
+        </svg>
+        <div class="text-center">
+          <h1 class="text-base font-black tracking-wider text-red-950 leading-tight">懷舊小瑪莉</h1>
+          <p class="text-[10px] font-bold text-red-800">台灣夜市彈珠台</p>
         </div>
+      </div>
 
-        <!-- 狀態資訊欄 (HUD) -->
-        <div class="flex justify-between items-center bg-black/50 px-3 py-1.5 rounded-lg border border-red-900 text-xs font-bold">
-            <div>代幣: <span id="coins-display" class="text-yellow-400 text-sm">100</span></div>
-            <div>押分: <span id="bet-display" class="text-yellow-400 text-sm">5</span></div>
-            <div class="flex items-center gap-1">
-                <button onclick="toggleAudio()" id="audio-btn" class="bg-red-800 px-2 py-0.5 rounded text-[10px] border border-red-600">音效: 開</button>
-            </div>
-        </div>
-
-        <!-- 遊戲主盤面 (Canvas 渲染區 + 12槽標示) -->
-        <div class="relative w-full bg-yellow-200 border-4 border-red-900 rounded-lg overflow-hidden shadow-inner flex flex-col">
-            <div id="canvas-container" class="w-full h-[320px] relative"></div>
-            
-            <!-- 底部 12 槽中獎狀態標示列 -->
-            <div id="slots-indicator" class="grid grid-cols-12 bg-red-950 border-t-2 border-red-900 text-center py-1 text-[9px] font-bold text-yellow-300">
-                <!-- 動態生成 1-12 槽標示 -->
-            </div>
-
-            <!-- 狀態提示覆蓋層 -->
-            <div id="game-msg" class="absolute inset-x-0 top-1/3 flex items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0">
-                <span class="bg-black/80 text-yellow-300 px-4 py-2 rounded-xl font-black text-base border-2 border-yellow-500 shadow-xl" id="game-msg-text">請按下黃色大按鈕！</span>
-            </div>
-        </div>
-
-        <!-- 操作面板區 -->
-        <div class="bg-red-800 border-2 border-red-900 rounded-xl p-2.5 flex flex-col gap-2.5 shadow-lg">
-            
-            <!-- 押分控制與大按鈕列 -->
-            <div class="flex items-center justify-between gap-2">
-                <!-- 押分調整 -->
-                <div class="flex flex-col items-center bg-black/40 p-1.5 rounded border border-red-900">
-                    <span class="text-[10px] text-yellow-300 mb-1">投入彈珠 (1-99)</span>
-                    <div class="flex items-center gap-1">
-                        <button onclick="adjustBet(-1)" class="w-7 h-7 bg-red-600 hover:bg-red-500 active:scale-95 rounded font-bold text-white shadow">-</button>
-                        <input type="number" id="bet-input" value="5" min="1" max="99" onchange="updateBetInput(this.value)" class="w-10 text-center bg-black text-yellow-400 font-bold rounded text-sm py-0.5 border border-yellow-500">
-                        <button onclick="adjustBet(1)" class="w-7 h-7 bg-red-600 hover:bg-red-500 active:scale-95 rounded font-bold text-white shadow">+</button>
-                    </div>
-                </div>
-
-                <!-- 醒目的黃色大按鈕 -->
-                <button id="start-btn" onclick="startRollingAndPlay()" class="flex-1 h-12 bg-gradient-to-t from-yellow-600 to-yellow-400 hover:from-yellow-500 hover:to-yellow-300 active:scale-95 border-2 border-yellow-200 rounded-xl font-black text-red-950 text-base shadow-[0_4px_0_#9a3412] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-1">
-                    <span>🔥 開始抽倍率</span>
-                </button>
-            </div>
-
-            <!-- 下方細節控制列 (鑰匙孔、彈簧拉桿區、接珠槽) -->
-            <div class="flex justify-between items-center px-1">
-                <!-- 裝飾鑰匙孔 -->
-                <div class="w-6 h-6 rounded-full bg-gray-400 border-2 border-gray-600 flex items-center justify-center shadow">
-                    <div class="w-1 h-3 bg-black"></div>
-                </div>
-
-                <!-- 彈簧拉桿視覺與提示 -->
-                <div id="launcher-area" class="flex items-center gap-1.5 bg-black/30 px-2.5 py-1 rounded-lg border border-red-900 cursor-pointer select-none">
-                    <span class="text-[10px] text-yellow-200 font-bold" id="pull-hint">下拉拉桿發射</span>
-                    <div class="w-4 h-8 bg-yellow-500 rounded border border-yellow-700 relative flex items-center justify-center">
-                        <div id="pull-handle" class="absolute w-6 h-3 bg-red-600 rounded shadow-md border border-yellow-200 transition-all" style="bottom: 2px;"></div>
-                    </div>
-                </div>
-
-                <!-- 紅色接珠槽裝飾 -->
-                <div class="w-14 h-4 bg-red-950 rounded-b-lg border border-red-900 flex justify-center items-center shadow-inner">
-                    <div class="w-8 h-1 bg-red-800 rounded"></div>
-                </div>
-            </div>
-
-        </div>
-
+      <!-- 右側喇叭與靜音按鈕 -->
+      <button id="mute-btn" class="bg-red-900 text-amber-300 px-2 py-1 rounded text-xs font-bold border border-amber-300 active:scale-95 transition">
+        音效:開
+      </button>
     </div>
 
-    <!-- 破產重置彈窗 Modal -->
-    <div id="gameover-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-red-900 border-4 border-yellow-400 rounded-2xl p-6 text-center flex flex-col gap-4 max-w-xs w-full shadow-2xl">
-            <h2 class="text-xl font-black text-yellow-300">代幣已用盡！</h2>
-            <p class="text-xs text-white">夜市老闆看你很有潛力，決定免費讓你再投一次幣！</p>
-            <button onclick="resetGameCoins()" class="bg-yellow-400 hover:bg-yellow-300 text-red-950 font-black py-2.5 rounded-xl text-base shadow-lg active:scale-95 transition-all">
-                再投一次 (100代幣)
-            </button>
+    <!-- 狀態列與倍率燈區 (Status & Multiplier Lights) -->
+    <div class="bg-red-950 px-3 py-2 flex flex-col gap-1 border-b-2 border-red-800 shrink-0">
+      <div class="flex justify-between items-center text-xs font-bold">
+        <div class="bg-black/50 px-3 py-1 rounded text-amber-400 border border-amber-500/30">
+          代幣: <span id="coins-display" class="text-base font-extrabold">100</span>
         </div>
+        <div class="flex items-center gap-1 bg-black/50 px-2 py-1 rounded border border-amber-500/30">
+          <span>押注:</span>
+          <button id="bet-minus" class="px-1.5 py-0.5 bg-red-700 rounded text-white font-bold hover:bg-red-600">-</button>
+          <span id="bet-display" class="w-6 text-center text-amber-400 font-extrabold">10</span>
+          <button id="bet-plus" class="px-1.5 py-0.5 bg-red-700 rounded text-white font-bold hover:bg-red-600">+</button>
+        </div>
+      </div>
+
+      <!-- 5個倍率燈 -->
+      <div class="grid grid-cols-5 gap-1.5 pt-1">
+        <div data-mult="2" class="mult-light flex flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded py-1 transition-all">
+          <span class="text-[10px] text-gray-400">倍率</span>
+          <span class="text-sm font-black text-gray-300">2x</span>
+        </div>
+        <div data-mult="4" class="mult-light flex flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded py-1 transition-all">
+          <span class="text-[10px] text-gray-400">倍率</span>
+          <span class="text-sm font-black text-gray-300">4x</span>
+        </div>
+        <div data-mult="6" class="mult-light flex flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded py-1 transition-all">
+          <span class="text-[10px] text-gray-400">倍率</span>
+          <span class="text-sm font-black text-gray-300">6x</span>
+        </div>
+        <div data-mult="8" class="mult-light flex flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded py-1 transition-all">
+          <span class="text-[10px] text-gray-400">倍率</span>
+          <span class="text-sm font-black text-gray-300">8x</span>
+        </div>
+        <div data-mult="10" class="mult-light flex flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded py-1 transition-all">
+          <span class="text-[10px] text-gray-400">倍率</span>
+          <span class="text-sm font-black text-gray-300">10x</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 遊戲完整邏輯 Script -->
-    <script>
-        /**
-         * 【可調整參數設定物件】
-         */
-        const CONFIG = {
-            initialCoins: 100,           // 初始代幣
-            gravityY: 1.0,               // 盤面重力
-            pegRestitution: 0.75,        // 釘子彈性
-            ballRestitution: 0.6,        // 彈珠彈性
-            ballFriction: 0.002,         // 彈珠摩擦力
-            pegSpacingX: 38,             // 釘子水平間距
-            pegSpacingY: 34,             // 釘子垂直間距
-            minLaunchPower: 12,          // 最小發射力道
-            maxLaunchPower: 26,          // 最大發射力道
-            ballInterval: 300,           // 多顆彈珠發射間隔 (毫秒)
-            stuckTimeout: 5000           // 彈珠卡住超時判斷 (毫秒)
-        };
+    <!-- Matter.js 遊戲畫布容器 -->
+    <div id="canvas-container" class="relative flex-1 w-full bg-amber-100 overflow-hidden cursor-crosshair">
+      <canvas id="pinball-canvas" class="block w-full h-full"></canvas>
+      
+      <!-- 結算提示浮動訊息 -->
+      <div id="result-overlay" class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-20">
+        <div id="result-title" class="text-3xl font-black text-amber-300 mb-1 drop-shadow-lg"></div>
+        <div id="result-desc" class="text-base font-bold text-white drop-shadow-md"></div>
+        <button id="restart-btn" class="mt-4 px-5 py-2 bg-yellow-500 hover:bg-yellow-400 text-red-950 font-black rounded-full shadow-lg border-2 border-yellow-300 active:scale-95 transition hidden">
+          再投一次
+        </button>
+      </div>
+    </div>
 
-        // 賠率燈號權重設定 (總權重 12)
-        const MULTIPLIER_POOL = [
-            { mult: 2, weight: 4 },
-            { mult: 4, weight: 3 },
-            { mult: 6, weight: 3 },
-            { mult: 8, weight: 1 },
-            { mult: 10, weight: 1 }
-        ];
+    <!-- 操作區 (Control Panel) -->
+    <div class="bg-red-900 px-4 py-3 flex items-center justify-between border-t-4 border-red-800 shrink-0 select-none">
+      <!-- 裝飾鑰匙孔 -->
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 border-2 border-gray-600 flex items-center justify-center shadow-inner">
+          <div class="w-1.5 h-4 bg-gray-900 rounded-sm"></div>
+        </div>
+        <span class="text-[9px] text-amber-300 mt-0.5 font-bold">LOCK</span>
+      </div>
 
-        // 各倍率對應的中獎槽設定 (1~12槽，注意陣列索引 0-11)
-        const WINNING_SLOTS_MAP = {
-            2: [1, 4, 7, 10],   // 第 2, 5, 8, 11 槽
-            4: [2, 5, 9],        // 第 3, 6, 10 槽
-            6: [2, 6, 9],        // 第 3, 7, 10 槽
-            8: [1],              // 第 2 槽
-            10: [10]             // 第 11 槽
-        };
+      <!-- 黃色大按鈕 -->
+      <button id="action-btn" class="flex-1 mx-4 py-3 bg-gradient-to-t from-yellow-600 via-yellow-400 to-yellow-300 hover:from-yellow-500 hover:to-yellow-200 text-red-950 font-black text-lg rounded-xl shadow-[0_6px_0_#9a3412] active:translate-y-1.5 active:shadow-[0_0px_0_#9a3412] transition-all border-2 border-yellow-200">
+        開始抽倍率
+      </button>
 
-        // 遊戲狀態變數
-        let coins = CONFIG.initialCoins;
-        let currentBet = 5;
-        let currentMultiplier = 0;
-        let gameState = 'IDLE'; // IDLE, ROLLING, READY_TO_LAUNCH, LAUNCHING, FINISHED
-        let activeBalls = [];
-        let pendingBallsCount = 0;
-        let winningSlotsForCurrentGame = [];
-        let isAudioEnabled = true;
+      <!-- 拉桿說明 / 簡易提示 -->
+      <div class="flex flex-col items-center justify-center bg-red-950 px-2 py-1 rounded border border-red-800 text-[10px] text-amber-300 font-bold text-center w-20">
+        <span>右側拉桿</span>
+        <span class="text-white font-normal">下拉發射</span>
+      </div>
+    </div>
 
-        // Web Audio API 音效合成器
-        let audioCtx = null;
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
+  </div>
 
-        function playSound(type) {
-            if (!isAudioEnabled) return;
-            initAudio();
-            if (!audioCtx) return;
+  <script>
+    /* ==========================================
+       設定物件 (Config Object)
+       ========================================== */
+    const CONFIG = {
+      gravity: 0.8,              // 重力加速度
+      ballRestitution: 0.6,      // 彈珠彈性
+      pegRestitution: 0.7,       // 釘子彈性
+      pegRows: 7,                // 釘子行數
+      pegCols: 6,                // 釘子列數
+      launcherPowerMin: 8,       // 最小發射力道
+      launcherPowerMax: 22,      // 最大發射力道
+      multipliers: [2, 4, 6, 8, 10], // 可選倍率
+      // 權重: 2x=4, 4x=3, 6x=3, 8x=1, 10x=1 (總權重 12)
+      multWeights: [
+        { mult: 2, weight: 4 },
+        { mult: 4, weight: 3 },
+        { mult: 6, weight: 3 },
+        { mult: 8, weight: 1 },
+        { mult: 10, weight: 1 }
+      ],
+      // 各倍率對應的中獎槽 (1~12)
+      winningSlots: {
+        2: [2, 5, 8, 11],
+        4: [3, 6, 10],
+        6: [3, 7, 10],
+        8: [2],
+        10: [11]
+      },
+      initialCoins: 100
+    };
 
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                const now = audioCtx.currentTime;
+    /* ==========================================
+       遊戲狀態變數
+       ========================================== */
+    let gameState = 'IDLE'; // IDLE -> DRAWING -> READY_TO_LAUNCH -> LAUNCHED -> SETTLED
+    let coins = CONFIG.initialCoins;
+    let betAmount = 10;
+    let currentMultiplier = null;
+    let isMuted = false;
+    let audioCtx = null;
 
-                if (type === 'coin') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                } else if (type === 'bounce') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.05);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } else if (type === 'win') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.setValueAtTime(554.37, now + 0.1);
-                    osc.frequency.setValueAtTime(659.25, now + 0.2);
-                    osc.frequency.setValueAtTime(880, now + 0.3);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-                    osc.start(now);
-                    osc.stop(now + 0.6);
-                } else if (type === 'tick') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(800, now);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
-                    osc.start(now);
-                    osc.stop(now + 0.03);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
+    // Matter.js 模組捷徑
+    const { Engine, Render, Runner, Bodies, Composite, Constraint, Events, Body, Vector } = Matter;
 
-        function toggleAudio() {
-            isAudioEnabled = !isAudioEnabled;
-            document.getElementById('audio-btn').innerText = `音效: ${isAudioEnabled ? '開' : '關'}`;
-        }
+    let engine, render, runner;
+    let ballBody = null;
+    let canvas, ctx;
+    let containerWidth = 400;
+    let containerHeight = 500;
 
-        // 初始化 12 槽標示列
-        const slotsIndicatorEl = document.getElementById('slots-indicator');
-        for (let i = 1; i <= 12; i++) {
-            let div = document.createElement('div');
-            div.id = `slot-label-${i}`;
-            div.innerText = i;
-            div.className = "border-r border-red-900 last:border-r-0 py-0.5 text-gray-400";
-            slotsIndicatorEl.appendChild(div);
-        }
+    // 拉桿互動變數
+    let isDraggingLauncher = false;
+    let dragStartY = 0;
+    let currentDragDist = 0;
 
-        function updateUI() {
-            document.getElementById('coins-display').innerText = coins;
-            document.getElementById('bet-display').innerText = currentBet;
-        }
+    /* ==========================================
+       Web Audio API 音效合成
+       ========================================== */
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
 
-        function adjustBet(amount) {
-            if (gameState !== 'IDLE' && gameState !== 'FINISHED') return;
-            currentBet += amount;
-            if (currentBet < 1) currentBet = 1;
-            if (currentBet > 99) currentBet = 99;
-            if (currentBet > coins) currentBet = coins;
-            document.getElementById('bet-input').value = currentBet;
-            updateUI();
-        }
+    function playSound(type) {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
 
-        function updateBetInput(val) {
-            if (gameState !== 'IDLE' && gameState !== 'FINISHED') return;
-            let num = parseInt(val) || 1;
-            if (num < 1) num = 1;
-            if (num > 99) num = 99;
-            if (num > coins) num = coins;
-            currentBet = num;
-            document.getElementById('bet-input').value = currentBet;
-            updateUI();
-        }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
 
-        // Matter.js 物理引擎初始化
-        const { Engine, Render, Runner, Bodies, Composite, Events, Body, Vector } = Matter;
+      const now = audioCtx.currentTime;
 
-        const container = document.getElementById('canvas-container');
-        const width = container.clientWidth || 320;
-        const height = container.clientHeight || 320;
-
-        const engine = Engine.create();
-        const world = engine.world;
-        world.gravity.y = CONFIG.gravityY;
-
-        const render = Render.create({
-            element: container,
-            engine: engine,
-            options: {
-                width: width,
-                height: height,
-                wireframes: false,
-                background: '#fef08a'
-            }
+      if (type === 'coin') {
+        // 投幣聲 / 獲得金幣高音
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } else if (type === 'bounce') {
+        // 彈珠碰撞釘子聲
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(200 + Math.random() * 100, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'launch') {
+        // 發射聲
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (type === 'win') {
+        // 中獎歡呼旋律
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.frequency.setValueAtTime(freq, now + idx * 0.08);
+          g.gain.setValueAtTime(0.2, now + idx * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.2);
+          o.start(now + idx * 0.08);
+          o.stop(now + idx * 0.08 + 0.2);
         });
+      } else if (type === 'tick') {
+        // 跑馬燈選倍率聲
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(440, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      }
+    }
 
-        Render.run(render);
-        const runner = Runner.create();
-        Runner.run(runner, engine);
+    /* ==========================================
+       初始化 Matter.js 物理引擎與畫布
+       ========================================== */
+    function initPhysics() {
+      canvas = document.getElementById('pinball-canvas');
+      const container = document.getElementById('canvas-container');
+      containerWidth = container.clientWidth;
+      containerHeight = container.clientHeight;
 
-        // 建立機台邊界與右側發射軌道
-        const wallOptions = { isStatic: true, render: { fillStyle: '#b91c1c' } };
-        Composite.add(world, [
-            Bodies.rectangle(width / 2, -10, width, 20, wallOptions), // 頂
-            Bodies.rectangle(-10, height / 2, 20, height, wallOptions), // 左
-            Bodies.rectangle(width + 10, height / 2, 20, height, wallOptions), // 右
-            Bodies.rectangle(width - 35, height * 0.45, 8, height * 0.7, wallOptions) // 發射道隔板
-        ]);
+      canvas.width = containerWidth;
+      canvas.height = containerHeight;
 
-        // 建立交錯（錯位）釘子陣列 (Pegs)
-        const pegRows = 5;
-        const pegCols = 6;
-        const startX = 40;
-        const startY = 60;
-        
-        for (let r = 0; r < pegRows; r++) {
-            let numCols = (r % 2 === 0) ? pegCols : pegCols - 1;
-            let offsetX = (r % 2 === 0) ? startX : startX + CONFIG.pegSpacingX / 2;
-            for (let c = 0; c < numCols; c++) {
-                let x = offsetX + c * CONFIG.pegSpacingX;
-                let y = startY + r * CONFIG.pegSpacingY;
-                let peg = Bodies.circle(x, y, 5.5, {
-                    isStatic: true,
-                    render: { fillStyle: '#ea580c' },
-                    restitution: CONFIG.pegRestitution
-                });
-                Composite.add(world, peg);
-            }
-        }
+      // 建立 Engine
+      engine = Engine.create();
+      engine.gravity.y = CONFIG.gravity;
 
-        // 底部 12 條入球槽隔板
-        const numSlots = 12;
-        const slotWidth = (width - 35) / numSlots;
-        const slotY = height - 30;
+      // 建立世界邊界與障礙物
+      buildPinballBoard();
 
-        for (let i = 0; i <= numSlots; i++) {
-            let x = i * slotWidth;
-            let divider = Bodies.rectangle(x, slotY + 15, 3, 50, {
-                isStatic: true,
-                render: { fillStyle: '#991b1b' }
-            });
-            Composite.add(world, divider);
-        }
-
-        // 碰撞音效觸發
-        Events.on(engine, 'collisionStart', (event) => {
-            let pairs = event.pairs;
-            for (let i = 0; i < pairs.length; i++) {
-                let p = pairs[i];
-                if (p.bodyA.label === 'ball' || p.bodyB.label === 'ball') {
-                    playSound('bounce');
-                }
-            }
+      // 監聽碰撞事件 (播放彈跳音效)
+      Events.on(engine, 'collisionStart', (event) => {
+        event.pairs.forEach((pair) => {
+          if (ballBody && (pair.bodyA === ballBody || pair.bodyB === ballBody)) {
+            playSound('bounce');
+          }
         });
+      });
 
-        // 燈號重置與點亮
-        function resetAllLamps() {
-            [2, 4, 6, 8, 10].forEach(m => {
-                let el = document.getElementById(`lamp-${m}`);
-                el.className = "w-11 h-7 rounded bg-gray-800 border border-yellow-600 flex items-center justify-center text-xs font-bold text-gray-400 transition-all duration-200";
-            });
+      // 繪製迴圈 (Custom Canvas Render)
+      ctx = canvas.getContext('2d');
+      
+      (function renderLoop() {
+        Engine.update(engine, 1000 / 60);
+        drawCustomScene();
+        requestAnimationFrame(renderLoop);
+      })();
+    }
+
+    /* ==========================================
+       建立盤面結構 (牆壁、釘子、12個入球槽)
+       ========================================== */
+    let slotBodies = [];
+    function buildPinballBoard() {
+      // 清空世界現有物件
+      Composite.clear(engine.world, false);
+      slotBodies = [];
+
+      const wallThickness = 20;
+      const w = containerWidth;
+      const h = containerHeight;
+
+      // 牆壁 (外框)
+      const wallOptions = { isStatic: true, render: { visible: false } };
+      const leftWall = Bodies.rectangle(-wallThickness/2, h/2, wallThickness, h, wallOptions);
+      const rightWall = Bodies.rectangle(w + wallThickness/2, h/2, wallThickness, h, wallOptions);
+      const topWall = Bodies.rectangle(w/2, -wallThickness/2, w, wallThickness, wallOptions);
+      
+      // 右側發射軌道分隔牆
+      const launchLaneWidth = 45;
+      const dividerTop = 100;
+      const dividerHeight = h - 180;
+      const divider = Bodies.rectangle(w - launchLaneWidth, dividerTop + dividerHeight/2, 10, dividerHeight, wallOptions);
+
+      Composite.add(engine.world, [leftWall, rightWall, topWall, divider]);
+
+      // 釘子配置 (橘色圓柱釘子，交錯排列)
+      const pegRows = CONFIG.pegRows;
+      const startY = 90;
+      const endY = h - 220;
+      const rowHeight = (endY - startY) / (pegRows - 1);
+      const playAreaWidth = w - launchLaneWidth - 30;
+
+      for (let r = 0; r < pegRows; r++) {
+        const cols = (r % 2 === 0) ? CONFIG.pegCols : CONFIG.pegCols - 1;
+        const rowWidth = playAreaWidth;
+        const spacing = rowWidth / (cols + 1);
+
+        for (let c = 0; c < cols; c++) {
+          const px = 20 + spacing * (c + 1) + ((r % 2 === 0) ? 0 : spacing / 2);
+          const py = startY + r * rowHeight;
+          const peg = Bodies.circle(px, py, 7, {
+            isStatic: true,
+            restitution: CONFIG.pegRestitution,
+            render: { fillStyle: '#f97316' }
+          });
+          Composite.add(engine.world, peg);
         }
+      }
 
-        function highlightLamp(mult) {
-            resetAllLamps();
-            let el = document.getElementById(`lamp-${mult}`);
-            if (el) {
-                el.className = "w-11 h-7 rounded bg-yellow-400 border border-yellow-200 flex items-center justify-center text-xs font-bold text-red-950 lamp-active scale-110 shadow-lg";
-            }
-        }
+      // 底部 12 個入球槽 (編號 1-12)
+      const numSlots = 12;
+      const slotAreaWidth = w - launchLaneWidth - 10;
+      const slotWidth = slotAreaWidth / numSlots;
+      const slotY = h - 70;
+      const separatorHeight = 70;
 
-        // 更新底部槽的中獎視覺標示
-        function updateSlotsIndicator() {
-            for (let i = 1; i <= 12; i++) {
-                let labelEl = document.getElementById(`slot-label-${i}`);
-                if (winningSlotsForCurrentGame.includes(i - 1)) {
-                    labelEl.className = "border-r border-red-900 last:border-r-0 py-0.5 bg-red-600 text-white font-black animate-pulse";
-                } else {
-                    labelEl.className = "border-r border-red-900 last:border-r-0 py-0.5 text-gray-400";
-                }
-            }
-        }
+      // 底部托盤地板
+      const floor = Bodies.rectangle(w/2, h + 10, w, 40, wallOptions);
+      Composite.add(engine.world, floor);
 
-        function clearSlotsIndicator() {
-            for (let i = 1; i <= 12; i++) {
-                let labelEl = document.getElementById(`slot-label-${i}`);
-                labelEl.className = "border-r border-red-900 last:border-r-0 py-0.5 text-gray-400";
-            }
-        }
-
-        // 顯示提示訊息
-        function showMessage(text, duration = 1500) {
-            const msgEl = document.getElementById('game-msg');
-            const textEl = document.getElementById('game-msg-text');
-            textEl.innerText = text;
-            msgEl.style.opacity = '1';
-            if (duration > 0) {
-                setTimeout(() => {
-                    msgEl.style.opacity = '0';
-                }, duration);
-            }
-        }
-
-        // 1. 點擊黃色大按鈕：抽倍率程序
-        function startRollingAndPlay() {
-            if (gameState === 'ROLLING' || gameState === 'LAUNCHING') return;
-
-            if (coins < currentBet) {
-                document.getElementById('gameover-modal').classList.remove('hidden');
-                return;
-            }
-
-            // 扣除代幣
-            coins -= currentBet;
-            updateUI();
-
-            gameState = 'ROLLING';
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('start-btn').classList.add('opacity-50');
-            clearSlotsIndicator();
-
-            showMessage("🎲 正在隨機抽取本局倍率...", 0);
-
-            // 跑馬燈動畫效果 (約 1.5 秒)
-            let multipliers = [2, 4, 6, 8, 10];
-            let counter = 0;
-            let rollInterval = setInterval(() => {
-                let randomTemp = multipliers[Math.floor(Math.random() * multipliers.length)];
-                let tempEl = document.getElementById(`lamp-${randomTemp}`);
-                resetAllLamps();
-                tempEl.classList.add('lamp-running');
-                playSound('tick');
-                counter++;
-
-                if (counter > 15) {
-                    clearInterval(rollInterval);
-                    finalizeMultiplierSelection();
-                }
-            }, 90);
-        }
-
-        // 決定最終倍率與對應中獎槽
-        function finalizeMultiplierSelection() {
-            // 加權隨機抽取
-            let totalWeight = MULTIPLIER_POOL.reduce((sum, item) => sum + item.weight, 0);
-            let randomNum = Math.random() * totalWeight;
-            let currentSum = 0;
-            let selected = MULTIPLIER_POOL[0].mult;
-
-            for (let item of MULTIPLIER_POOL) {
-                currentSum += item.weight;
-                if (randomNum <= currentSum) {
-                    selected = item.mult;
-                    break;
-                }
-            }
-
-            currentMultiplier = selected;
-            winningSlotsForCurrentGame = WINNING_SLOTS_MAP[currentMultiplier] || [1, 4, 7, 10];
-
-            highlightLamp(currentMultiplier);
-            updateSlotsIndicator();
-            playSound('coin');
-
-            gameState = 'READY_TO_LAUNCH';
-            document.getElementById('start-btn').innerText = "請向下拉桿發射";
-            document.getElementById('start-btn').disabled = false;
-            document.getElementById('start-btn').classList.remove('opacity-50');
-
-            showMessage(`🎯 抽中 ${currentMultiplier} 倍！請拉動右側發射拉桿`, 2500);
-        }
-
-        // 2. 發射機制 (支援滑鼠與觸控拖曳拉桿)
-        let isDragging = false;
-        let dragStartY = 0;
-        let pullDistance = 0;
-        const launcherArea = document.getElementById('launcher-area');
-        const pullHandle = document.getElementById('pull-handle');
-
-        launcherArea.addEventListener('pointerdown', (e) => {
-            if (gameState !== 'READY_TO_LAUNCH') return;
-            isDragging = true;
-            dragStartY = e.clientY;
-            launcherArea.setPointerCapture(e.pointerId);
+      for (let i = 0; i <= numSlots; i++) {
+        const sx = 10 + i * slotWidth;
+        const separator = Bodies.rectangle(sx, slotY + separatorHeight/2, 4, separatorHeight, {
+          isStatic: true,
+          render: { fillStyle: '#b91c1c' }
         });
+        Composite.add(engine.world, separator);
+      }
 
-        launcherArea.addEventListener('pointermove', (e) => {
-            if (!isDragging || gameState !== 'READY_TO_LAUNCH') return;
-            let deltaY = e.clientY - dragStartY;
-            pullDistance = Math.max(0, Math.min(deltaY, 40)); // 限制拉動距離 0-40px
-            pullHandle.style.bottom = `${2 - pullDistance}px`;
-            document.getElementById('pull-hint').innerText = `力道: ${Math.round(pullDistance * 0.6 + 5)}`;
+      // 記錄每個槽的 X 範圍與中心點，供結算判斷
+      slotBodies = [];
+      for (let i = 0; i < numSlots; i++) {
+        const startX = 10 + i * slotWidth;
+        const endX = startX + slotWidth;
+        slotBodies.push({
+          index: i + 1, // 1 到 12
+          centerX: (startX + endX) / 2,
+          startX: startX,
+          endX: endX,
+          y: slotY + 20
         });
+      }
+    }
 
-        launcherArea.addEventListener('pointerup', (e) => {
-            if (!isDragging) return;
-            isDragging = false;
-            pullHandle.style.bottom = '2px';
-            document.getElementById('pull-hint').innerText = "下拉拉桿發射";
+    /* ==========================================
+       自訂 Canvas 繪製畫面 (視覺風格)
+       ========================================== */
+    function drawCustomScene() {
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
 
-            if (gameState === 'READY_TO_LAUNCH') {
-                // 計算發射力道
-                let powerRatio = pullDistance / 40; // 0 到 1
-                let launchPower = CONFIG.minLaunchPower + powerRatio * (CONFIG.maxLaunchPower - CONFIG.minLaunchPower);
-                if (pullDistance < 5) launchPower = CONFIG.minLaunchPower; // 預設最小力道
+      // 1. 繪製盤面背景及 12 槽與槽號
+      ctx.fillStyle = '#fef08a'; // 黃色盤面
+      ctx.fillRect(0, 0, containerWidth, containerHeight);
 
-                executeLaunchSequence(launchPower);
-            }
-            pullDistance = 0;
-        });
+      // 繪製底部發射軌道區背景
+      const launchLaneWidth = 45;
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(containerWidth - launchLaneWidth, 0, launchLaneWidth, containerHeight);
 
-        // 執行多顆彈珠依序發射程序
-        function executeLaunchSequence(power) {
-            gameState = 'LAUNCHING';
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('start-btn').classList.add('opacity-50');
-            document.getElementById('start-btn').innerText = "🔥 發射中...";
+      // 繪製 12 個入球槽與編號、中獎高亮槽
+      const numSlots = 12;
+      const slotAreaWidth = containerWidth - launchLaneWidth - 10;
+      const slotWidth = slotAreaWidth / numSlots;
+      const slotY = containerHeight - 70;
 
-            pendingBallsCount = currentBet;
-            
-            let launchTimer = setInterval(() => {
-                if (pendingBallsCount <= 0) {
-                    clearInterval(launchTimer);
-                    return;
-                }
-
-                // 建立彈珠
-                let ball = Bodies.circle(width - 18, height - 40, 7.5, {
-                    restitution: CONFIG.ballRestitution,
-                    friction: CONFIG.ballFriction,
-                    render: { fillStyle: '#ffffff' },
-                    label: 'ball'
-                });
-                ball.spawnTime = Date.now();
-                Composite.add(world, ball);
-                activeBalls.push(ball);
-                playSound('bounce');
-
-                // 給予向上初速
-                Body.setVelocity(ball, { x: 0, y: -power });
-
-                pendingBallsCount--;
-            }, CONFIG.ballInterval);
+      slotBodies.forEach((slot) => {
+        // 檢查是否為當局中獎槽
+        let isWinningSlot = false;
+        if (currentMultiplier && CONFIG.winningSlots[currentMultiplier]) {
+          if (CONFIG.winningSlots[currentMultiplier].includes(slot.index)) {
+            isWinningSlot = true;
+          }
         }
 
-        // 3. 物理引擎更新迴圈：檢查彈珠是否入袋或卡住
-        let totalWinThisGame = 0;
-        let settledBallsCount = 0;
-        let gameResultsSummary = [];
+        // 槽底背景
+        ctx.fillStyle = isWinningSlot ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(slot.startX, slotY, slotWidth, 70);
 
-        Events.on(engine, 'afterUpdate', () => {
-            if (gameState !== 'LAUNCHING') return;
-
-            let now = Date.now();
-            for (let i = activeBalls.length - 1; i >= 0; i--) {
-                let ball = activeBalls[i];
-
-                // 檢查是否卡住超過 5 秒
-                if (now - ball.spawnTime > CONFIG.stuckTimeout) {
-                    // 強制判定落入中央槽
-                    processBallLanding(ball, 5);
-                    activeBalls.splice(i, 1);
-                    continue;
-                }
-
-                // 檢查是否到達底部入球區
-                if (ball.position.y > height - 35) {
-                    let xPos = ball.position.x;
-                    let slotIndex = Math.floor((xPos / (width - 35)) * numSlots);
-                    if (slotIndex < 0) slotIndex = 0;
-                    if (slotIndex >= numSlots) slotIndex = numSlots - 1;
-
-                    processBallLanding(ball, slotIndex);
-                    activeBalls.splice(i, 1);
-                }
-            }
-
-            // 檢查本局所有彈珠是否皆已發射完且全部落入槽內
-            if (pendingBallsCount === 0 && activeBalls.length === 0 && gameState === 'LAUNCHING') {
-                finalizeGameResults();
-            }
-        });
-
-        // 處理單顆彈珠入袋結果
-        function processBallLanding(ball, slotIndex) {
-            Composite.remove(world, ball);
-            let isWin = winningSlotsForCurrentGame.includes(slotIndex);
-            if (isWin) {
-                totalWinThisGame += currentBet * currentMultiplier;
-            }
-            gameResultsSummary.push({ slot: slotIndex + 1, isWin: isWin });
+        // 若為中獎槽且已抽到倍率，繪製發光霓虹邊框與倍率文字
+        if (isWinningSlot) {
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(slot.startX + 2, slotY + 2, slotWidth - 4, 66);
         }
 
-        // 4. 結算本局結果
-        function finalizeGameResults() {
-            gameState = 'FINISHED';
-            coins += totalWinThisGame;
-            updateUI();
+        // 槽號 (1-12)
+        ctx.fillStyle = isWinningSlot ? '#991b1b' : '#78350f';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(slot.index, slot.centerX, slotY + 25);
 
-            if (totalWinThisGame > 0) {
-                playSound('win');
-                showMessage(`🎉 中獎！本局獲得 ${totalWinThisGame} 代幣！`, 4000);
-            } else {
-                showMessage(`😅 可惜沒中獎，再接再厲！`, 3000);
-            }
-
-            // 重置按鈕狀態
-            document.getElementById('start-btn').innerText = "🔥 開始抽倍率";
-            document.getElementById('start-btn').disabled = false;
-            document.getElementById('start-btn').classList.remove('opacity-50');
-
-            // 數值歸零準備下一局
-            totalWinThisGame = 0;
-            gameResultsSummary = [];
+        // 如果是中獎槽，額外標示倍率
+        if (isWinningSlot && currentMultiplier) {
+          ctx.fillStyle = '#b91c1c';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillText(currentMultiplier + 'x', slot.centerX, slotY + 45);
         }
+      });
 
-        // 破產免費重置
-        function resetGameCoins() {
-            coins = CONFIG.initialCoins;
-            updateUI();
-            document.getElementById('gameover-modal').classList.add('hidden');
-            resetAllLamps();
-            clearSlotsIndicator();
-            gameState = 'IDLE';
-            showMessage("🎁 老闆招待：已補充 100 代幣！", 2500);
+      // 2. 繪製 Matter.js 中的所有物理物件 (釘子、牆壁隔板、彈珠)
+      const bodies = Composite.allBodies(engine.world);
+      bodies.forEach((body) => {
+        if (body.render.visible === false) return;
+
+        ctx.beginPath();
+        if (body.circleRadius) {
+          // 圓形 (釘子或彈珠)
+          ctx.arc(body.position.x, body.position.y, body.circleRadius, 0, Math.PI * 2);
+          ctx.fillStyle = body.render.fillStyle || '#f97316';
+          ctx.fill();
+          if (body === ballBody) {
+            // 彈珠外框與反光
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+          }
+        } else if (body.parts && body.parts.length > 1) {
+          // 複合體
+        } else {
+          // 矩形 (牆壁、隔板)
+          ctx.save();
+          ctx.translate(body.position.x, body.position.y);
+          ctx.rotate(body.angle);
+          ctx.rect(-body.bounds.max.x + body.position.x, -body.bounds.max.y + body.position.y, 
+                   body.bounds.max.x - body.bounds.min.x, body.bounds.max.y - body.bounds.min.y);
+          ctx.fillStyle = body.render.fillStyle || '#b91c1c';
+          ctx.fill();
+          ctx.restore();
         }
+      });
 
-        // 初始化介面顯示
+      // 3. 繪製右側拉桿彈簧與把手
+      const launchX = containerWidth - 22;
+      const baseY = containerHeight - 80;
+      const pullDist = (gameState === 'READY_TO_LAUNCH' || isDraggingLauncher) ? currentDragDist : 0;
+      const handleY = baseY + pullDist;
+
+      // 繪製彈簧線圈
+      ctx.beginPath();
+      ctx.strokeStyle = '#d1d5db';
+      ctx.lineWidth = 4;
+      ctx.moveTo(launchX, baseY);
+      for (let y = baseY; y < handleY; y += 8) {
+        ctx.lineTo(launchX + ((y / 8) % 2 === 0 ? 6 : -6), y);
+      }
+      ctx.lineTo(launchX, handleY);
+      ctx.stroke();
+
+      // 繪製黃色拉桿頭
+      ctx.beginPath();
+      ctx.arc(launchX, handleY + 10, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#eab308';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#854d0e';
+      ctx.stroke();
+    }
+
+    /* ==========================================
+       遊戲邏輯流程控制
+       ========================================== */
+    const coinsDisplay = document.getElementById('coins-display');
+    const betDisplay = document.getElementById('bet-display');
+    const betMinusBtn = document.getElementById('bet-minus');
+    const betPlusBtn = document.getElementById('bet-plus');
+    const actionBtn = document.getElementById('action-btn');
+    const muteBtn = document.getElementById('mute-btn');
+    const multLights = document.querySelectorAll('.mult-light');
+    const resultOverlay = document.getElementById('result-overlay');
+    const resultTitle = document.getElementById('result-title');
+    const resultDesc = document.getElementById('result-desc');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function updateUI() {
+      coinsDisplay.textContent = coins;
+      betDisplay.textContent = betAmount;
+
+      if (coins <= 0 && gameState === 'SETTLED') {
+        actionBtn.classList.add('hidden');
+        restartBtn.classList.remove('hidden');
+      } else {
+        restartBtn.classList.add('hidden');
+      }
+    }
+
+    // 調整押注
+    betMinusBtn.addEventListener('click', () => {
+      if (gameState !== 'IDLE') return;
+      if (betAmount > 1) {
+        betAmount--;
         updateUI();
-        showMessage("請設定押分並按下黃色大按鈕開始！", 3000);
-    </script>
+      }
+    });
+
+    betPlusBtn.addEventListener('click', () => {
+      if (gameState !== 'IDLE') return;
+      if (betAmount < coins && betAmount < 99) {
+        betAmount++;
+        updateUI();
+      }
+    });
+
+    // 靜音切換
+    muteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      muteBtn.textContent = isMuted ? '音效:關' : '音效:開';
+    });
+
+    // 點擊主動作按鈕 (開始抽倍率 / 發射)
+    actionBtn.addEventListener('click', () => {
+      initAudio();
+      if (gameState === 'IDLE') {
+        startDrawMultiplier();
+      }
+    });
+
+    // 重新開始 (代幣歸零時)
+    restartBtn.addEventListener('click', () => {
+      coins = CONFIG.initialCoins;
+      betAmount = 10;
+      gameState = 'IDLE';
+      actionBtn.classList.remove('hidden');
+      actionBtn.textContent = '開始抽倍率';
+      resultOverlay.classList.remove('opacity-100');
+      resultOverlay.classList.add('opacity-0', 'pointer-events-none');
+      updateUI();
+    });
+
+    /* 1. 抽倍率 (跑馬燈動畫 1.5秒) */
+    function startDrawMultiplier() {
+      if (coins < betAmount) {
+        alert('代幣不足！');
+        return;
+      }
+
+      // 立即扣除代幣
+      coins -= betAmount;
+      updateUI();
+      playSound('coin');
+
+      gameState = 'DRAWING';
+      actionBtn.textContent = '抽倍率中...';
+      actionBtn.disabled = true;
+
+      // 決定最終倍率 (加權隨機)
+      const finalMult = getRandomWeightedMultiplier();
+
+      // 跑馬燈動畫
+      let counter = 0;
+      const totalSteps = 15;
+      const intervalTime = 100;
+
+      const marqueeInterval = setInterval(() => {
+        playSound('tick');
+        const randomMult = CONFIG.multipliers[Math.floor(Math.random() * CONFIG.multipliers.length)];
+        highlightMultiplierLight(randomMult);
+        counter++;
+
+        if (counter >= totalSteps) {
+          clearInterval(marqueeInterval);
+          currentMultiplier = finalMult;
+          highlightMultiplierLight(currentMultiplier);
+
+          // 進入準備發射階段
+          gameState = 'READY_TO_LAUNCH';
+          actionBtn.textContent = '請下拉右側拉桿發射';
+          actionBtn.disabled = false;
+        }
+      }, intervalTime);
+    }
+
+    function getRandomWeightedMultiplier() {
+      const rand = Math.random() * 12; // 總權重 12
+      let cumulative = 0;
+      for (let item of CONFIG.multWeights) {
+        cumulative += item.weight;
+        if (rand <= cumulative) {
+          return item.mult;
+        }
+      }
+      return 2;
+    }
+
+    function highlightMultiplierLight(mult) {
+      multLights.forEach((light) => {
+        const m = parseInt(light.getAttribute('data-mult'));
+        if (m === mult) {
+          light.classList.remove('bg-gray-800', 'border-gray-700');
+          light.classList.add('bg-yellow-400', 'border-yellow-200', 'shadow-[0_0_15px_#facc15]');
+          light.querySelector('span:nth-child(2)').classList.remove('text-gray-300');
+          light.querySelector('span:nth-child(2)').classList.add('text-red-950');
+        } else {
+          light.classList.remove('bg-yellow-400', 'border-yellow-200', 'shadow-[0_0_15px_#facc15]');
+          light.classList.add('bg-gray-800', 'border-gray-700');
+          light.querySelector('span:nth-child(2)').classList.remove('text-red-950');
+          light.querySelector('span:nth-child(2)').classList.add('text-gray-300');
+        }
+      });
+    }
+
+    function resetMultiplierLights() {
+      multLights.forEach((light) => {
+        light.classList.remove('bg-yellow-400', 'border-yellow-200', 'shadow-[0_0_15px_#facc15]');
+        light.classList.add('bg-gray-800', 'border-gray-700');
+        light.querySelector('span:nth-child(2)').classList.remove('text-red-950');
+        light.querySelector('span:nth-child(2)').classList.add('text-gray-300');
+      });
+    }
+
+    /* 2. 發射彈珠 (指標/觸控拖曳拉桿) */
+    const canvasContainer = document.getElementById('canvas-container');
+
+    canvasContainer.addEventListener('pointerdown', (e) => {
+      if (gameState !== 'READY_TO_LAUNCH') return;
+      const rect = canvasContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // 檢查是否點擊右側發射區
+      if (x > containerWidth - 60 && y > containerHeight - 160) {
+        isDraggingLauncher = true;
+        dragStartY = y;
+        currentDragDist = 0;
+      }
+    });
+
+    canvasContainer.addEventListener('pointermove', (e) => {
+      if (!isDraggingLauncher || gameState !== 'READY_TO_LAUNCH') return;
+      const rect = canvasContainer.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      currentDragDist = Math.max(0, Math.min(60, y - dragStartY)); // 限制最大拉動距離 60px
+    });
+
+    canvasContainer.addEventListener('pointerup', () => {
+      if (!isDraggingLauncher || gameState !== 'READY_TO_LAUNCH') return;
+      isDraggingLauncher = false;
+      launchBall(currentDragDist);
+      currentDragDist = 0;
+    });
+
+    function launchBall(pullDist) {
+      if (gameState !== 'READY_TO_LAUNCH') return;
+      gameState = 'LAUNCHED';
+      actionBtn.textContent = '彈珠發射中...';
+      actionBtn.disabled = true;
+
+      playSound('launch');
+
+      // 建立彈珠實體於右側發射軌道底部
+      const startX = containerWidth - 22;
+      const startY = containerHeight - 100;
+      ballBody = Bodies.circle(startX, startY, 9, {
+        restitution: CONFIG.ballRestitution,
+        friction: 0.005,
+        render: { fillStyle: '#ffffff' }
+      });
+
+      Composite.add(engine.world, ballBody);
+
+      // 根據拉動距離計算向上發射力道
+      const powerRatio = pullDist / 60; // 0 到 1
+      const forceMag = CONFIG.launcherPowerMin + powerRatio * (CONFIG.launcherPowerMax - CONFIG.launcherPowerMin);
+      Body.setVelocity(ballBody, { x: 0, y: -forceMag });
+
+      // 檢查彈珠落入入球槽的計時器
+      startBallTracking();
+    }
+
+    /* 3. 追蹤彈珠落入結果與超時防呆 */
+    let trackingInterval = null;
+    let stationaryTimer = null;
+    let lastY = 0;
+
+    function startBallTracking() {
+      let stagnantCount = 0;
+
+      trackingInterval = setInterval(() => {
+        if (!ballBody || gameState !== 'LAUNCHED') {
+          clearInterval(trackingInterval);
+          return;
+        }
+
+        const pos = ballBody.position;
+
+        // 檢查是否到達底部入球槽高度 (containerHeight - 70)
+        if (pos.y > containerHeight - 80) {
+          settleBall(pos.x);
+        }
+
+        // 防呆：如果彈珠卡在半空中超過 5 秒不動，自動判定最近的槽
+        if (Math.abs(pos.y - lastY) < 1) {
+          stagnantCount++;
+          if (stagnantCount > 50) { // 50 * 100ms = 5秒
+            settleBall(pos.x);
+          }
+        } else {
+          stagnantCount = 0;
+        }
+        lastY = pos.y;
+      }, 100);
+    }
+
+    function settleBall(xPos) {
+      if (gameState !== 'LAUNCHED') return;
+      clearInterval(trackingInterval);
+
+      // 移除彈珠實體
+      if (ballBody) {
+        Composite.remove(engine.world, ballBody);
+        ballBody = null;
+      }
+
+      // 找出落入哪一個槽 (1-12)
+      let landedSlot = slotBodies.reduce((prev, curr) => {
+        return Math.abs(curr.centerX - xPos) < Math.abs(prev.centerX - xPos) ? curr : prev;
+      });
+
+      const slotNum = landedSlot.index;
+
+      // 判定是否中獎
+      let isWin = false;
+      if (currentMultiplier && CONFIG.winningSlots[currentMultiplier]) {
+        if (CONFIG.winningSlots[currentMultiplier].includes(slotNum)) {
+          isWin = true;
+        }
+      }
+
+      let wonCoins = 0;
+      if (isWin) {
+        wonCoins = betAmount * currentMultiplier;
+        coins += wonCoins;
+        playSound('win');
+      }
+
+      updateUI();
+      showResultModal(slotNum, isWin, wonCoins);
+    }
+
+    /* 4. 顯示結算彈窗 */
+    function showResultModal(slotNum, isWin, wonCoins) {
+      gameState = 'SETTLED';
+
+      if (isWin) {
+        resultTitle.textContent = '🎉 中獎啦！ 🎉';
+        resultDesc.textContent = `落入第 ${slotNum} 槽 (投入 ${betAmount} 顆 × ${currentMultiplier}x) = 獲得 ${wonCoins} 代幣`;
+      } else {
+        resultTitle.textContent = '😢 未中獎 😢';
+        resultDesc.textContent = `落入第 ${slotNum} 槽，再接再厲！`;
+      }
+
+      resultOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      resultOverlay.classList.add('opacity-100');
+
+      // 3 秒後自動隱藏結算畫面，重置遊戲回到 IDLE
+      setTimeout(() => {
+        resultOverlay.classList.remove('opacity-100');
+        resultOverlay.classList.add('opacity-0', 'pointer-events-none');
+        resetMultiplierLights();
+        currentMultiplier = null;
+        gameState = 'IDLE';
+        actionBtn.textContent = '開始抽倍率';
+        actionBtn.disabled = false;
+        updateUI();
+      }, 3500);
+    }
+
+    // 頁面載閉後初始化物理與 UI
+    window.addEventListener('load', () => {
+      initPhysics();
+      updateUI();
+    });
+
+    // 視窗大小改變時重新調整畫布
+    window.addEventListener('resize', () => {
+      const container = document.getElementById('canvas-container');
+      if (container && canvas) {
+        containerWidth = container.clientWidth;
+        containerHeight = container.clientHeight;
+        canvas.width = containerWidth;
+        canvas.height = containerHeight;
+        buildPinballBoard();
+      }
+    });
+  </script>
 </body>
 </html>
